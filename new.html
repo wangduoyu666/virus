@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title></title>
+</head>
+<body>
+   <script type="text/javascript">
+   	alert(window.location.href);
+   </script>
+</body>
+</html>
+
+1  function getBaseURL() {
+var url = location.href; // entire url including querystring - also: window.location.href;
+var baseURL = url.substring(0, url.indexOf('/', 14));
+if (baseURL.indexOf('http://localhost') != -1) {
+// Base Url for localhost
+var url = location.href; // window.location.href;
+var pathname = location.pathname; // window.location.pathname;
+var index1 = url.indexOf(pathname);
+var index2 = url.indexOf("/", index1 + 1);
+var baseLocalUrl = url.substr(0, index2);
+
+return baseLocalUrl + "/";
+}
+else {
+// Root Url for domain name
+return baseURL + "/";
+}
+
+}
+
+
+
+2  const urlParser = ( req, res, next ) => {
+ if ( !req.isRoutable ) return next( false );
+
+ const urlObject = new URL( req.headers.url );
+
+ /**
+   * url query variables convert to object
+   * ?a=b&c=d --> {a: b, c: d}
+   */
+ urlObject.searchParams.forEach( ( value, name ) => {
+  req.query[ name ] = value;
+ } );
+
+ req.pathname = urlObject.pathname;
+ req.hostname = urlObject.hostname;
+ req.href = urlObject.href;
+
+ return next( true );
+}
+
+
+3    function getUrlVars() {
+    var vars = [], hash;
+    var decodedUrl = decodeURIComponent(window.location.href);
+    var hashes = decodedUrl.slice(decodedUrl.indexOf('?') + 1).split('&');
+    for(var i = 0; i < hashes.length; i++) {
+        hash = hashes[i].split('=');
+        vars.push(hash[0]);
+        vars[hash[0]] = hash[1];
+    }
+    return vars;
+}
+
+
+
+4     import { parse } from "../../utils/url";
+
+import { isPretty } from "../source";
+import { getURL } from "./getURL";
+
+export function nodeHasChildren(item) {
+  return item.type == "directory" && Array.isArray(item.contents);
+}
+
+export function isExactUrlMatch(pathPart, debuggeeUrl) {
+  // compare to hostname with an optional 'www.' prefix
+  const { host } = parse(debuggeeUrl);
+  if (!host) {
+    return false;
+  }
+  return host === pathPart || host.replace(/^www\./, "") === pathPart.replace(/^www\./, "");
+}
+
+export function isPathDirectory(path) {
+  // Assume that all urls point to files except when they end with '/'
+  // Or directory node has children
+
+  if (path.endsWith("/")) {
+    return true;
+  }
+
+  let separators = 0;
+  for (let i = 0; i < path.length - 1; ++i) {
+    if (path[i] === "/") {
+      if (path[i + i] !== "/") {
+        return false;
+      }
+
+      ++separators;
+    }
+  }
+
+  switch (separators) {
+    case 0: {
+      return false;
+    }
+    case 1: {
+      return !path.startsWith("/");
+    }
+    default: {
+      return true;
+    }
+  }
+}
+
+export function isDirectory(item) {
+  return (item.type === "directory" || isPathDirectory(item.path)) && item.name != "(index)";
+}
+
+export function getSourceFromNode(item) {
+  const { contents } = item;
+  if (!isDirectory(item) && !Array.isArray(contents)) {
+    return contents;
+  }
+}
+
+export function isSource(item) {
+  return item.type === "source";
+}
+
+export function partIsFile(index, parts, url) {
+  const isLastPart = index === parts.length - 1;
+  return isLastPart && !isDirectory(url);
+}
+
+export function createDirectoryNode(name, path, contents) {
+  return {
+    type: "directory",
+    name,
+    path,
+    contents,
+  };
+}
+
+export function createSourceNode(name, path, contents) {
+  return {
+    type: "source",
+    name,
+    path,
+    contents,
+  };
+}
+
+export function createParentMap(tree) {
+  const map = new WeakMap();
+
+  function _traverse(subtree) {
+    if (subtree.type === "directory") {
+      for (const child of subtree.contents) {
+        map.set(child, subtree);
+        _traverse(child);
+      }
+    }
+  }
+
+  if (tree.type === "directory") {
+    // Don't link each top-level path to the "root" node because the
+    // user never sees the root
+    tree.contents.forEach(_traverse);
+  }
+
+  return map;
+}
+
+export function getRelativePath(url) {
+  const { pathname } = parse(url);
+  if (!pathname) {
+    return url;
+  }
+  const index = pathname.indexOf("/");
+
+  return index !== -1 ? pathname.slice(index + 1) : "";
+}
+
+export function getRelativePathWithoutFile(url) {
+  const path = getRelativePath(url);
+  return path.slice(0, path.lastIndexOf("/"));
+}
+
+export function getPathWithoutThread(path) {
+  const pathParts = path.split(/(context\d+?\/)/).splice(2);
+  if (pathParts && pathParts.length > 0) {
+    return pathParts.join("");
+  }
+  return "";
+}
+
+
+5        var fs = require('fs');
+var path = require('path');
+// In newer Node.js versions where process is already global this isn't necessary.
+var process = require("process");
+
+var moveFrom = "/home/mike/dev/node/sonar/moveme";
+var moveTo = "/home/mike/dev/node/sonar/tome"
+
+// Loop through all the files in the temp directory
+fs.readdir(moveFrom, function (err, files) {
+  if (err) {
+    console.error("Could not list the directory.", err);
+    process.exit(1);
+  }
+
+  files.forEach(function (file, index) {
+    // Make one pass and make the file complete
+    var fromPath = path.join(moveFrom, file);
+    var toPath = path.join(moveTo, file);
+
+    fs.stat(fromPath, function (error, stat) {
+      if (error) {
+        console.error("Error stating file.", error);
+        return;
+      }
+
+      if (stat.isFile())
+        console.log("'%s' is a file.", fromPath);
+      else if (stat.isDirectory())
+        console.log("'%s' is a directory.", fromPath);
+
+      fs.rename(fromPath, toPath, function (error) {
+        if (error) {
+          console.error("File moving error.", error);
+        } else {
+          console.log("Moved file '%s' to '%s'.", fromPath, toPath);
+        }
+      });
+    });
+  });
+});
