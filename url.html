@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title></title>
+</head>
+<body>
+<script type="text/javascript">
+	/*var pathname=window.location.pathname;
+	var url=window.location.href;
+	function path(url){
+		var path= 
+	}
+	*/
+	const myurl= new url('https://www.wordpress.org');
+	
+	jQuery(document).ready(function(){
+		var path=window.location.pathname;
+		var parts=path.split('/');
+		var lastSegment=parts.pop() || parts.pop();
+		lastSegment=lastSegment.replace('-','').replace('-','');
+		jQuery('.archive .filters').before('<div class="product_heading"><h3>Best '+lastSegment+' Deals </h3></div>');
+	});
+
+
+	document.location.pathname.substring(document.location.pathname.lastIndexOf('/.')+1);
+</script>
+</body>
+</html>
